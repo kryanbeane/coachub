@@ -2,6 +2,10 @@
 <nav class="list-nav">
     <ul>
         <li><a href="/">Home</a></li>
-        <li><a href="/about">About</a></li>
+        <li><a href="/clients">Clients</a></li>
+        <li><a href="/messages">Messages</a></li>
+        <li><a href="/designer">Designer</a></li>
+        <li><a href="/automation">Automation</a></li>
+        <li><a href="/payment">Payment</a></li>
     </ul>
 </nav>
