@@ -1,5 +1,4 @@
 <script lang="ts">
-      import { signInWithGoogle } from '../../stores/authStore';
 </script>
 
 <div class="flex items-center justify-center min-h-screen">
@@ -16,7 +15,6 @@
 
 		<div class="mt-4">
 			<button
-				on:click={signInWithGoogle}
 				type="button"
 				class="btn btn-outline variant-ringed flex justify-center items-center w-full"
 			>

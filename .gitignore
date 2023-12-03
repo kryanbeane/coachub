@@ -23,17 +23,10 @@ node_modules
 /build
 # /functions
 
-# Created by https://www.toptal.com/developers/gitignore/api/node,firebase
-# Edit at https://www.toptal.com/developers/gitignore?templates=node,firebase
-
-### Firebase ###
 .idea
 **/node_modules/*
-**/.firebaserc
 
-### Firebase Patch ###
 .runtimeconfig.json
-.firebase/
 
 ### Node ###
 # Logs
@@ -160,5 +153,3 @@ dist/
 # Temporary folders
 tmp/
 temp/
-
-# End of https://www.toptal.com/developers/gitignore/api/node,firebase
