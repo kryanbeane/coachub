@@ -11,5 +11,5 @@
 		"strict": true,
 		"moduleResolution": "bundler"
 	},
-	"files":["types.d.ts"]
+	"files": ["types.d.ts"]
 }
