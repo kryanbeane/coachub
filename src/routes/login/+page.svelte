@@ -1,5 +1,6 @@
 <script lang="ts">
-      import { signInWithGoogle } from '../../stores/authStore';
+	import { signInWithGoogle } from '$lib/stores/authStore';
+
 </script>
 
 <div class="flex items-center justify-center min-h-screen">

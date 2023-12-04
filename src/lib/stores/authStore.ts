@@ -9,7 +9,7 @@ import {
 	type User
 } from 'firebase/auth';
 import { browser } from '$app/environment';
-import { auth } from '../lib/firebase/firebase.client';
+import { auth } from '../firebase/firebase.client';
 
 interface AuthStore {
 	isLoading: boolean;
@@ -18,17 +18,15 @@ interface AuthStore {
 
 export const authStore = writable<AuthStore>({ isLoading: true, currentUser: null });
 
-auth.app;
-
 const provider = new GoogleAuthProvider();
-const auth2 = getAuth();
+const authentication = getAuth();
 
 export const signInWithGoogle = () => {
-	signInWithRedirect(auth2, provider);
+	signInWithRedirect(authentication, provider);
 };
 
 export const signOutUser = async () => {
-	await signOut(auth2);
+	await signOut(authentication);
 	authStore.set({ isLoading: false, currentUser: null });
 	if (browser) {
 		window.location.href = '/login';
@@ -38,18 +36,18 @@ export const signOutUser = async () => {
 export const handleRedirectResult = async () => {
 	authStore.update((state) => ({ ...state, isLoading: true }));
 	try {
-		const result = await getRedirectResult(auth2);
+		const result = await getRedirectResult(authentication);
 		if (result) {
 			// Sign-in succeeded
+			console.log("successful log in")
 			authStore.update((state) => ({ ...state, isLoading: false, currentUser: result.user }));
 			if (browser) {
 				window.location.href = '/home';
 			}
 		} else {
-			// No user, set up observer for auth state changes
 			onAuthStateChanged(auth, (user) => {
 				authStore.update((state) => ({ ...state, isLoading: false, currentUser: user }));
-				if (user && browser) {
+				if (user && browser && window.location.pathname !== '/home') {
 					window.location.href = '/home';
 				}
 			});

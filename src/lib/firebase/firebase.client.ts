@@ -1,5 +1,4 @@
-// Import the functions you need from the SDKs you need
-import { FirebaseApp, deleteApp, getApp, getApps, initializeApp } from 'firebase/app';
+import { type FirebaseApp, deleteApp, getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth, setPersistence, inMemoryPersistence } from 'firebase/auth';
 
 const firebaseConfig = {

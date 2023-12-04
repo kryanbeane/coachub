@@ -1,6 +1,6 @@
 <script>
 	import { onDestroy } from 'svelte';
-    import { authStore } from '../../stores/authStore'; // Adjust the import path as necessary
+    import { authStore } from '../../lib/stores/authStore'; // Adjust the import path as necessary
 
     let userEmail = 'authStore';
 
