@@ -1,46 +1,45 @@
 <script lang="ts">
-	import '../app.postcss';
-	import { AppBar } from '@skeletonlabs/skeleton';
-    import { LightSwitch } from '@skeletonlabs/skeleton';
+	import { AppBar, Avatar } from '@skeletonlabs/skeleton';
+	import { LightSwitch } from '@skeletonlabs/skeleton';
+	import { logout } from '$lib/firebase/auth.client';
+	import { goto } from '$app/navigation';
+	import messageStore from '$lib/stores/message.store';
+
+	let initials: string = 'ah';
+
+	export let isLoggedIn: boolean;
+
+	async function onLogout() {
+		try {
+			await logout();
+			goto('/login');
+		} catch (e) {
+			console.log(e);
+			messageStore.showError(e as string);
+		}
+	}
 </script>
 
 <AppBar>
-    <svelte:fragment slot="lead">
-        <strong class="text-xl uppercase">Coachub</strong>
-    </svelte:fragment>
-    <svelte:fragment slot="trail">
-        <a
-            class="btn btn-sm variant-ghost-surface"
-            href="https://discord.gg/EXqV7W8MtY"
-            target="_blank"
-            rel="noreferrer"
-        >
-            Discord
-        </a>
-        <a
-            class="btn btn-sm variant-ghost-surface"
-            href="https://twitter.com/SkeletonUI"
-            target="_blank"
-            rel="noreferrer"
-        >
-            Twitter
-        </a>
-        <a
-            class="btn btn-sm variant-ghost-surface"
-            href="https://github.com/skeletonlabs/skeleton"
-            target="_blank"
-            rel="noreferrer"
-        >
-            GitHub
-        </a>
-        <a
-            class="btn btn-sm variant-ghost-surface"
-            href="/clients"
-            target="_blank"
-            rel="noreferrer">
-            a
-        </a>
-        <LightSwitch />
-        
-    </svelte:fragment>
+	<svelte:fragment slot="lead">
+		<strong class="text-xl uppercase">Coachub</strong>
+	</svelte:fragment>
+	<svelte:fragment slot="trail">
+		{#if isLoggedIn}
+			<Avatar {initials} background="bg-primary-500 w-10" />
+
+			<a
+				on:click={onLogout}
+				class="btn btn-sm variant-ghost-surface"
+				href="/login"
+				rel="noreferrer"
+			>
+				Log Out
+			</a>
+		{:else}
+			<span class="text-sm">Uhhhhh.... you shouldn't be here</span>
+		{/if}
+
+		<LightSwitch />
+	</svelte:fragment>
 </AppBar>
