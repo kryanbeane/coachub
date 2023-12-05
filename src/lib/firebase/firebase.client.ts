@@ -1,5 +1,7 @@
-import { type FirebaseApp, deleteApp, getApp, getApps, initializeApp } from 'firebase/app';
-import { getAuth, setPersistence, inMemoryPersistence } from 'firebase/auth';
+import { browser } from '$app/environment';
+import { getApps, initializeApp } from 'firebase/app';
+import { getAnalytics } from 'firebase/analytics'
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
 	apiKey: import.meta.env.VITE_API_KEY,
@@ -11,20 +13,11 @@ const firebaseConfig = {
 	measurementId: import.meta.env.VITE_MEASUREMENT_ID
 };
 
-let firebaseApp: FirebaseApp;
-
-if (!getApps().length) {
-	console.debug('Initialising firebase');
-	firebaseApp = initializeApp(firebaseConfig);
-	console.debug('firebase initialised');
-} else {
-  console.log("I AM HERE AAAAAAAAAAAAAAAA")
-	firebaseApp = getApp();
-	// Deleting app and reinitializing it as the old one may not have the keys
-	console.debug('Deleting firebase app and reinitialising');
-	deleteApp(firebaseApp);
-	firebaseApp = initializeApp(firebaseConfig);
-	console.debug('firebase re-initialised');
+if (getApps().length == 0) {
+    const app = initializeApp(firebaseConfig);
+    if (browser) {
+        getAnalytics(app)
+    }
 }
 
-export const auth = getAuth(firebaseApp);
+export const db = getFirestore()

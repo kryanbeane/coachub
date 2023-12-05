@@ -1,6 +1,24 @@
 <script lang="ts">
-	import { signInWithGoogle } from '$lib/stores/authStore';
+	import '../../app.postcss';
 
+	import { loginWithGoogle } from '$lib/firebase/auth.client';
+	import messageStore from '$lib/stores/message.store';
+	import { afterLogin } from '$lib/helpers/route.helper';
+	import { page } from '$app/stores';
+
+	async function onLogin(e: Event) {
+		try {
+			const user = await loginWithGoogle();
+			console.log('user logged in: ', user.email);
+			await afterLogin($page.url, user.uid);
+		} catch (error: unknown) {
+			if (['auth/invalid-email', 'auth/user-not-found', 'auth/wrong-password'].includes(error as string)) {
+				messageStore.showError("error here 6" + error as string);
+				return;
+			}
+			messageStore.showError("error here 7" + error as string);
+		}
+	}
 </script>
 
 <div class="flex items-center justify-center min-h-screen">
@@ -17,7 +35,7 @@
 
 		<div class="mt-4">
 			<button
-				on:click={signInWithGoogle}
+				on:click={onLogin}
 				type="button"
 				class="btn btn-outline variant-ringed flex justify-center items-center w-full"
 			>

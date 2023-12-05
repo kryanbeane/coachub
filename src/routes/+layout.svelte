@@ -1,35 +1,51 @@
-<script>
-	import 'firebase/auth';
-	import { onMount } from 'svelte';
-	import { get, writable } from 'svelte/store';
-	import { authStore } from '../lib/stores/authStore';
-	import { auth } from '$lib/firebase/firebase.client';
-	import { ProgressRadial } from '@skeletonlabs/skeleton';
-	
-	const isLoading = writable(true);
+<script lang="ts">
+    import 'firebase/auth';
+    import { onMount } from 'svelte';
+    import messageStore from '$lib/stores/message.store';
+    import { sendJWTToken } from '$lib/firebase/auth.client';
+    import { AppShell } from '@skeletonlabs/skeleton';
+    import '../app.postcss';
 
-	onMount(() => {
-		const unsubscribe = auth.onAuthStateChanged((user) => {
-			authStore.update((curr) => {
-				return { ...curr, isLoading: false, currentUser: user };
-			});
+	let timerId: ReturnType<typeof setInterval>;
 
-			const { currentUser } = get(authStore);
+    async function sendServerToken() {
+        try {
+            await sendJWTToken();
+        } catch (error) {
+            clearInterval(timerId);
+            messageStore.showError("error here 4" + error as string);
+            console.error(error);
+        }
+    }
 
-			if (!currentUser && window.location.pathname !== '/home') {
-				window.location.href = '/home';
-			}
+    function closeMessage() {
+        messageStore.hide();
+    }
 
-			isLoading.set(false);
-		});
-		return unsubscribe;
-	});
+    onMount(() => {
+        try {
+            sendServerToken();
+            timerId = setInterval(async () => {
+                await sendServerToken();
+            }, 1000 * 10 * 60); // 10 minutes interval
+        } catch (e) {
+            console.error(e);
+            messageStore.showError("error here 5" + e as string);
+        }
+
+        return () => {
+            clearInterval(timerId);
+        };
+    });
 </script>
 
-{#if $isLoading}
-	<div class="fixed inset-0 flex justify-center items-center z-10">
-		<ProgressRadial class="w-9" />
-	</div>
-{:else}
-	<slot />
-{/if}
+<AppShell>
+    {#if $messageStore.show}
+        <div class="alert alert-dismissible" role="alert">
+            <strong>{$messageStore.type === 'error' ? 'Error' : 'Success'}:</strong>
+            {$messageStore.message}
+            <button type="button" on:click={closeMessage} class="btn-close" aria-label="Close" />
+        </div>
+    {/if}
+    <slot />
+</AppShell>

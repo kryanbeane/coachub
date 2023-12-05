@@ -25,7 +25,7 @@ node_modules
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,firebase
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,firebase
-
+coachubsvcaccount.json
 ### Firebase ###
 .idea
 **/node_modules/*
