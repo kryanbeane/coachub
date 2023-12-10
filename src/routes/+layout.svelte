@@ -1,61 +1,60 @@
 <script lang="ts">
-	import 'firebase/auth';
-	import { onMount } from 'svelte';
-	import messageStore from '$lib/stores/message.store';
-	import { sendJWTToken } from '$lib/firebase/auth.client';
-	import { AppShell } from '@skeletonlabs/skeleton';
 	import '../app.postcss';
 
-    /**
-        Required for skeleton ui popups to work - https://www.skeleton.dev/utilities/popups
-    **/
-	import { computePosition, autoUpdate, offset, shift, flip, arrow } from '@floating-ui/dom';
-	import { storePopup } from '@skeletonlabs/skeleton';
-	storePopup.set({ computePosition, autoUpdate, offset, shift, flip, arrow });
+	import { onMount } from 'svelte';
+	import { session } from '$lib/firebase/session';
+	import { goto } from '$app/navigation';
+	import type { LayoutData } from './$types';
+	import { AppShell } from '@skeletonlabs/skeleton';
+	export let data: LayoutData;
 
-	let timerId: ReturnType<typeof setInterval>;
+	let loading: boolean = true;
+	let loggedIn: boolean = false;
 
-	async function sendServerToken() {
-		try {
-			await sendJWTToken();
-		} catch (error) {
-			clearInterval(timerId);
-			messageStore.showError(('error here 4' + error) as string);
-			console.error(error);
+	session.subscribe((cur: any) => {
+		loading = cur?.loading;
+		loggedIn = cur?.loggedIn;
+	});
+
+	onMount(async () => {
+		const user: any = await data.getAuthUser();
+
+		const loggedIn = !!user && user?.emailVerified;
+		session.update((cur: any) => {
+			loading = false;
+			return {
+				...cur,
+				user,
+				loggedIn,
+				loading: false
+			};
+		});
+
+		if (loggedIn) {
+			goto('/home');
 		}
-	}
-
-	function closeMessage() {
-		messageStore.hide();
-	}
-
-	onMount(() => {
-		try {
-			sendServerToken();
-			timerId = setInterval(
-				async () => {
-					await sendServerToken();
-				},
-				1000 * 10 * 60
-			); // 10 minutes interval
-		} catch (e) {
-			console.error(e);
-			messageStore.showError(('error here 5' + e) as string);
-		}
-
-		return () => {
-			clearInterval(timerId);
-		};
 	});
 </script>
 
 <AppShell>
-	{#if $messageStore.show}
-		<div class="alert alert-dismissible" role="alert">
-			<strong>{$messageStore.type === 'error' ? 'Error' : 'Success'}:</strong>
-			{$messageStore.message}
-			<button type="button" on:click={closeMessage} class="btn-close" aria-label="Close" />
-		</div>
+	{#if loading}
+		<section class="card w-full">
+			<div class="p-4 space-y-4">
+				<div class="placeholder" />
+				<div class="grid grid-cols-3 gap-8">
+					<div class="placeholder" />
+					<div class="placeholder" />
+					<div class="placeholder" />
+				</div>
+				<div class="grid grid-cols-4 gap-4">
+					<div class="placeholder" />
+					<div class="placeholder" />
+					<div class="placeholder" />
+					<div class="placeholder" />
+				</div>
+			</div>
+		</section>
+	{:else}
+		<slot />
 	{/if}
-	<slot />
 </AppShell>

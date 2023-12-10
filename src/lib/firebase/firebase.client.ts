@@ -1,7 +1,13 @@
 import { browser } from '$app/environment';
-import { getApps, initializeApp } from 'firebase/app';
-import { getAnalytics } from 'firebase/analytics'
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import type { FirebaseApp } from 'firebase/app';
+import type { Firestore } from 'firebase/firestore';
+import type { Auth } from 'firebase/auth';
+
+export let db: Firestore;
+export let app: FirebaseApp;
+export let auth: Auth;
 
 const firebaseConfig = {
 	apiKey: import.meta.env.VITE_API_KEY,
@@ -13,11 +19,12 @@ const firebaseConfig = {
 	measurementId: import.meta.env.VITE_MEASUREMENT_ID
 };
 
-if (getApps().length == 0) {
-    const app = initializeApp(firebaseConfig);
-    if (browser) {
-        getAnalytics(app)
-    }
-}
-
-export const db = getFirestore()
+export const initializeFirebase = () => {
+	if (!browser) {
+		throw new Error("Can't use the Firebase client on the server.");
+	}
+	if (!app) {
+		app = initializeApp(firebaseConfig);
+		auth = getAuth(app);
+	}
+};

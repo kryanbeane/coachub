@@ -1,26 +1,40 @@
 <script lang="ts">
 	import '../../app.postcss';
-	import { afterRegister } from '$lib/helpers/route.helper';
-	import { page } from '$app/stores';
-	import { session } from '$lib/firebase/session';
 	import { auth } from '$lib/firebase/firebase.client';
-	import {
-		GoogleAuthProvider,
-		signInWithPopup,
-		signInWithEmailAndPassword,
-		type UserCredential
-	} from 'firebase/auth';
-	
+	import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+	import { goto } from '$app/navigation';
+	import { session } from '$lib/firebase/session';
+	import { page } from '$app/stores';
+	import { afterRegister } from '$lib/helpers/route.helper';
 
 	let email: string = '';
 	let password: string = '';
 
-	async function onLoginWithGoogle(e: Event) {
+	async function handleRegister() {
+		await createUserWithEmailAndPassword(auth, email, password)
+			.then((result) => {
+                console.log(result)
+				const { user } = result;
+				session.update((cur: any) => {
+					return {
+						...cur,
+						user,
+						loggedIn: true,
+						loading: false
+					};
+				});
+				goto('/home');
+			})
+			.catch((error) => {
+				throw new Error(error);
+			});
+	}
+
+    async function onLoginWithGoogle(e: Event) {
 		try {
 			const user = await loginWithGoogle();
 			await afterRegister($page.url, user.uid);
 		} catch (error: unknown) {
-			console.log(error)
 			if (
 				['auth/invalid-email', 'auth/user-not-found', 'auth/wrong-password'].includes(
 					error as string
@@ -31,21 +45,6 @@
 			}
 			console.log(error)
 		}
-	}
-
-	async function loginWithMail() {
-		await signInWithEmailAndPassword(auth, email, password)
-			.then((userCredential) => {
-				const { user }: UserCredential = userCredential;
-				session.set({
-					loggedIn: true,
-					user: user
-				});
-				return user;
-			})
-			.catch((error) => {
-				return error;
-			});
 	}
 
 	async function loginWithGoogle() {
@@ -75,7 +74,7 @@
 			>
 		</h1>
 
-		<form on:submit={loginWithMail} class="text-slate-700 my-4">
+		<form on:submit={handleRegister} class="text-slate-700 my-4">
 			<input
 				bind:value={email}
 				type="email"
@@ -85,10 +84,10 @@
 			<div class="input-group input-group-divider grid-cols-[1fr_auto] text-white">
 				<input bind:value={password} type="password" placeholder="Password" />
 			</div>
-			<button type="submit" class="btn btn-outline variant-ringed content-center text-white mt-4"
-				>Login</button
-			>
+            <button type="submit" class="btn btn-outline variant-ringed content-center text-white mt-4"
+            >Register</button>
 		</form>
+
 
 		<div class="text-slate-50">or</div>
 
@@ -107,6 +106,5 @@
 				/>
 				<span>Continue with Google</span>
 			</button>
-		</div>
-	</div>
+		</div>	</div>
 </div>

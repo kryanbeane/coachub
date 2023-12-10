@@ -1,5 +1,6 @@
 <script>
 	import { page } from '$app/stores';
+	import { ProgressRadial } from '@skeletonlabs/skeleton';
 </script>
 
 <svelte:head>
@@ -10,7 +11,9 @@
 	{#if $page.status === 404}
 		<h1>Not found!</h1>
 	{:else}
-		<h1>Something went wrong</h1>
+		<div class="flex justify-center items-center h-screen">
+			<ProgressRadial width=100 ... stroke={100} meter="stroke-primary-500" track="stroke-primary-500/30" />
+		</div>
 	{/if}
 </div>
 
