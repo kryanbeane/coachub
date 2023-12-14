@@ -1,16 +1,21 @@
 <script lang="ts">
-    import { AppRail, AppRailTile, AppRailAnchor } from '@skeletonlabs/skeleton';
-    export let currentTile: number = 0;
+	import Icon from '@iconify/svelte';
+	import { TreeView, TreeViewItem } from '@skeletonlabs/skeleton';
 </script>
 
-<!-- Insert the list: -->
-<nav class="list-nav">
-    <ul>
-        <li><a href="/home">Dashboard</a></li>
-        <li><a href="/home/clients">Clients</a></li>
-        <li><a href="/home/messages">Messages</a></li>
-        <li><a href="/home/designer">Designer</a></li>
-        <li><a href="/home/automation">Automation</a></li>
-        <li><a href="/home/payment">Payment</a></li>
-    </ul>
-</nav>
+<TreeView>
+	<TreeViewItem>
+		<svelte:fragment slot="lead">
+			<Icon icon="fluent:home-12-filled" width="24" />
+		</svelte:fragment>
+		Home
+	</TreeViewItem>
+	<a href="/home/workouts">
+		<TreeViewItem>
+			<svelte:fragment slot="lead">
+				<Icon icon="map:gym" width="24" />
+			</svelte:fragment>
+			Designer
+		</TreeViewItem>
+	</a>
+</TreeView>

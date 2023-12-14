@@ -2,7 +2,7 @@ import { browser } from '$app/environment';
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import type { FirebaseApp } from 'firebase/app';
-import type { Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore, CACHE_SIZE_UNLIMITED } from 'firebase/firestore';
 import type { Auth } from 'firebase/auth';
 
 export let db: Firestore;
@@ -26,5 +26,8 @@ export const initializeFirebase = () => {
 	if (!app) {
 		app = initializeApp(firebaseConfig);
 		auth = getAuth(app);
+		db = initializeFirestore(app, {
+			cacheSizeBytes: CACHE_SIZE_UNLIMITED
+		});
 	}
 };

@@ -15,6 +15,7 @@
     "test:unit": "vitest"
   },
   "devDependencies": {
+    "@iconify/svelte": "^3.1.4",
     "@playwright/test": "^1.28.1",
     "@skeletonlabs/skeleton": "2.5.0",
     "@skeletonlabs/tw-plugin": "0.2.4",
@@ -50,6 +51,8 @@
     "firebase-admin": "^11.11.1",
     "flowbite": "^2.2.0",
     "lottie-web": "^5.12.2",
-    "svelte-lottie": "^0.0.0"
+    "svelte-lottie": "^0.0.0",
+    "svelte-sidebar-menu": "^0.9.12",
+    "unplugin-icons": "^0.18.1"
   }
 }

@@ -10,26 +10,24 @@
 		signInWithEmailAndPassword,
 		type UserCredential
 	} from 'firebase/auth';
-	
 
 	let email: string = '';
 	let password: string = '';
 
 	async function onLoginWithGoogle(e: Event) {
 		try {
-			const user = await loginWithGoogle();
-			await afterRegister($page.url, user.uid);
+			await loginWithGoogle().then(async (user) => await afterRegister($page.url, user));
 		} catch (error: unknown) {
-			console.log(error)
+			console.log(error);
 			if (
 				['auth/invalid-email', 'auth/user-not-found', 'auth/wrong-password'].includes(
 					error as string
 				)
 			) {
-				console.log(error)
+				console.log(error);
 				return;
 			}
-			console.log(error)
+			console.log(error);
 		}
 	}
 

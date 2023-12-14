@@ -4,16 +4,6 @@
 // export async function handle({ event, resolve }) {
 // 	const protectRoutes = ['/home'];
 
-// 	try {
-// 		const jwtToken = event.cookies.get('jwt');
-// 		if (jwtToken) {
-// 			event.locals.user = await getFirebaseUser(jwtToken);
-// 		} else {
-// 			event.locals.user = null;
-// 		}
-// 	} catch (error) {
-// 		event.locals.user = null;
-// 	}
 
 // 	const user = event.locals?.user;
 // 	const url = event.url;
@@ -22,7 +12,7 @@
 //         url.pathname = "/home"
 //     }
 
-// 	if (url.pathname !== '/') {
+// 	if (url.pathname !== '/') {xw
 // 		if (!user && protectRoutes.find((u) => url.pathname.indexOf(u) > -1)) {
 // 			throw redirect(302, `/login?redirect=${url.pathname}`);
 // 		}
