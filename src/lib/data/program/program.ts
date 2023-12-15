@@ -3,10 +3,14 @@ import { rotationConverter, type Rotation } from '../rotation/rotation';
 
 export class Program {
 	name: string;
+	description: string;
+	rotationCount: number;
 	rotations: Rotation[];
 
-	constructor(name: string, rotations: Rotation[]) {
+	constructor(name: string, description: string, rotationCount: number, rotations: Rotation[]) {
 		this.name = name;
+		this.description = description;
+		this.rotationCount = rotationCount;
 		this.rotations = rotations;
 	}
 }
@@ -23,6 +27,8 @@ export const programConverter = {
 		if (data) {
 			return new Program(
 				data.name,
+				data.description,
+				data.rotationCount,
 				data.rotations.map((rotation: DocumentSnapshot<DocumentData, DocumentData>) =>
 					rotationConverter.fromFirestore(rotation)
 				)

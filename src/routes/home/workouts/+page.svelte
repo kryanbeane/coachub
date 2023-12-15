@@ -4,16 +4,17 @@
 	import type { User } from 'firebase/auth';
 	import { collection, getDocs, doc, query, where } from 'firebase/firestore';
 	import { Program, programConverter } from '$lib/data/program/program';
+	import { Modal, getModalStore } from '@skeletonlabs/skeleton';
+	import type { ModalSettings, ModalComponent, ModalStore } from '@skeletonlabs/skeleton';
 
+	let modalStore: ModalStore = getModalStore();
 	let user: User;
 	let programs: (Program | undefined)[] = [];
 
-	// Subscribe to session store
 	session.subscribe(async (cur: any) => {
 		user = cur?.user;
 		if (user) {
 			try {
-				// Fetching user's workouts
 				const usersWorkoutsQuery = query(collection(db, 'users', user.uid, 'workouts'));
 				const querySnapshot = await getDocs(usersWorkoutsQuery);
 				programs = querySnapshot.docs
@@ -25,9 +26,23 @@
 			}
 		}
 	});
+
+	function createProgramModal(): void {
+		const modal: ModalSettings = {
+			type: 'component',
+			component: 'createProgram',
+			title: 'Program Designer', body: '',
+			response: (r) => console.log('response:', r)
+		};
+		modalStore.trigger(modal);
+	}
+
 </script>
 
-<!-- Your HTML template -->
+<div class="m-4">
+	<button class="btn variant-ringed-surface" on:click={createProgramModal}> Design Program </button>
+</div>
+<hr class="!border-t-2" />
 <dl class="list-dl">
 	{#each programs as program}
 		<div>
@@ -43,5 +58,4 @@
 			</span>
 		</div>
 	{/each}
-	<!-- ... -->
 </dl>
