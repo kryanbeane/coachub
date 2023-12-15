@@ -14,6 +14,10 @@
 	let email: string = '';
 	let password: string = '';
 
+	function setAuthCookie(userToken: string) {
+		document.cookie = `idToken=${userToken};path=/;max-age=3600;Secure`;
+	}
+
 	async function onLoginWithGoogle(e: Event) {
 		try {
 			await loginWithGoogle().then(async (user) => await afterRegister($page.url, user));
@@ -33,13 +37,14 @@
 
 	async function loginWithMail() {
 		await signInWithEmailAndPassword(auth, email, password)
-			.then((userCredential) => {
+			.then(async (userCredential) => {
 				const { user }: UserCredential = userCredential;
 				session.set({
 					loggedIn: true,
 					user: user
 				});
-				return user;
+				const token = await user.getIdToken();
+				setAuthCookie(token);
 			})
 			.catch((error) => {
 				return error;
@@ -48,13 +53,14 @@
 
 	async function loginWithGoogle() {
 		let user = await signInWithPopup(auth, new GoogleAuthProvider())
-			.then((userCredential) => {
+			.then(async (userCredential) => {
 				const retrievedUser = userCredential?.user;
 				session.set({
 					loggedIn: true,
 					user: retrievedUser
 				});
-
+				const token = await retrievedUser.getIdToken();
+				setAuthCookie(token);
 				return retrievedUser;
 			})
 			.catch((error: Error) => {

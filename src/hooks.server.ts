@@ -1,27 +1,38 @@
+import * as admin from 'firebase-admin';
 import { redirect } from '@sveltejs/kit';
+import svcAccount from '../coachubsvcaccount.json';
 
-/** @type {import('@sveltejs/kit').Handle} */
+// Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+	admin.initializeApp({
+		credential: admin.credential.cert(svcAccount as admin.ServiceAccount)
+	});
+}
+
+async function getUserFromToken(token: string) {
+	try {
+		const decodedToken = await admin.auth().verifyIdToken(token);
+		return decodedToken;
+	} catch (error) {
+		console.error('Error verifying auth token', error);
+		return null;
+	}
+}
+
 export async function handle({ event, resolve }) {
 	const protectRoutes = ['/home'];
-
-	const user = event.locals?.user;
 	const url = event.url;
 
-    if (url.pathname == "/") {
-        console.log("redirecting to home")
-        redirect(302, '/home');
-    }
+	const token = event.cookies.get('idToken');
+	const user = token ? await getUserFromToken(token) : null;
 
-	if (url.pathname !== '/') {
-		if (!user && protectRoutes.find((u) => url.pathname.indexOf(u) > -1)) {
-			redirect(302, `/login?redirect=${url.pathname}`);
-		}
-		if (user) {
-			redirect(302, '/home');
-		}
+	if (url.pathname === '/') {
+		redirect(302, '/home');
 	}
 
-	const response = await resolve(event);
+	if (!user && protectRoutes.includes(url.pathname)) {
+		redirect(302, `/login?redirect=${url.pathname}`);
+	}
 
-	return response;
+	return await resolve(event);
 }
