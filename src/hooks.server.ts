@@ -20,14 +20,17 @@ async function getUserFromToken(token: string) {
 }
 
 export async function handle({ event, resolve }) {
-	const protectRoutes = ['/home'];
+	const protectRoutes = ['/home', '/home/programs']; 
 	const url = event.url;
 
 	const token = event.cookies.get('idToken');
 	const user = token ? await getUserFromToken(token) : null;
 
 	if (url.pathname === '/') {
-		redirect(302, '/home');
+		if (user) {
+			redirect(302, '/home');
+		}
+		redirect(302, '/login');
 	}
 
 	if (!user && protectRoutes.includes(url.pathname)) {

@@ -9,15 +9,12 @@
 
 <th on:click={() => handler.sort(orderBy)} class:active={$sorted.identifier === identifier}>
 	<div class="flex">
-		<strong>
-			<slot />
-		</strong>
+		<slot />
 		<span class:asc={$sorted.direction === 'asc'} class:desc={$sorted.direction === 'desc'} />
 	</div>
 </th>
 
 <style>
-
 	th {
 		cursor: pointer;
 	}

@@ -5,12 +5,11 @@
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ModalStore } from '@skeletonlabs/skeleton';
 	import { fetchProgramsForUser } from '$lib/firebase/database.client';
-	import Search from '$lib/components/Search/Search.svelte';
-	import TableHeader from '$lib/components/TableHeader/TableHeader.svelte';
-	import TableHeaderFilter from '$lib/components/TableHeaderFilter/TableHeaderFilter.svelte';
-	import RowCount from '$lib/components/RowCount/RowCount.svelte';
-	import Pagination from '$lib/components/Pagination/Pagination.svelte';
-	import RowsPerPage from '$lib/components/RowsPerPage/RowsPerPage.svelte';
+	import Search from '$lib/components/Table/Search/Search.svelte';
+	import TableHeader from '$lib/components/Table/TableHeader/TableHeader.svelte';
+	import RowCount from '$lib/components/Table/RowCount/RowCount.svelte';
+	import Pagination from '$lib/components/Table/Pagination/Pagination.svelte';
+	import RowsPerPage from '$lib/components/Table/RowsPerPage/RowsPerPage.svelte';
 	import { DataHandler } from '@vincjo/datatables';
 
 	let modalStore: ModalStore = getModalStore();
@@ -47,23 +46,25 @@
 	$: rows = handler.getRows();
 </script>
 
-<div class="m-4">
-	<button class="btn variant-ringed-surface" on:click={createProgramModal}> Design Program </button>
-</div>
-<hr class="border-t-2" />
 
-<div class="mx-[10%] my-4 overflow-x-auto space-y-2">
+<div class="mx-4 my-4 overflow-x-auto space-y-2">
 	<header class="flex justify-between">
-		<Search {handler} />
+		<div>
+			<button class="btn variant-ringed-surface mr-1" on:click={createProgramModal}> Design Program </button>
+			<Search {handler} />
+		</div>
 		<RowsPerPage {handler} />
+		
 	</header>
 
 	<table class="table table-hover table-compact w-full table-auto">
+		
 		<thead>
 			<tr>
 				<TableHeader {handler} orderBy="name">Name</TableHeader>
 				<TableHeader {handler} orderBy="description">Description</TableHeader>
-				<TableHeader {handler} orderBy="rotationCount">Rotation Count</TableHeader>
+				<TableHeader {handler} orderBy="rotationCount">Rotations</TableHeader>
+				
 			</tr>
 			<!-- <tr>
 				<TableHeaderFilter {handler} filterBy="name" />
