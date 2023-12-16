@@ -1,4 +1,4 @@
-<script lang="ts">
+r<script lang="ts">
 	import { session } from '$lib/firebase/session';
 	import type { User } from 'firebase/auth';
 	import type { Program } from '$lib/data/program/program';
