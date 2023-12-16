@@ -1,32 +1,51 @@
 <script lang="ts">
 	import type { SvelteComponent } from 'svelte';
 	import { getModalStore } from '@skeletonlabs/skeleton';
+	import { createProgram } from '$lib/firebase/database.client';
+	import { Program } from '$lib/data/program/program';
+	import { session } from '$lib/firebase/session';
+	import type { User } from 'firebase/auth';
 
 	export let parent: SvelteComponent;
+
 	const modalStore = getModalStore();
 	const formData = {
-		name: '',
-		description: '',
-		rotationCount: ''
+		name: undefined,
+		description: undefined,
+		rotationCount: undefined
 	};
 
-	// We've created a custom submit function to pass the response and close the modal.
-	function onFormSubmit(): void {
-		if ($modalStore[0].response) $modalStore[0].response(formData);
-		modalStore.close();
-	}
+	let user: User;
 
-	const cBase = 'card p-4 w-modal shadow-xl space-y-4';
-	const cHeader = 'text-2xl font-bold';
-	const cForm = 'border border-surface-500 p-4 space-y-4 rounded-container-token';
+	session.subscribe((cur: any) => {
+		user = cur?.user;
+	});
+
+	function onCreateProgram(): void {
+		if (!formData.name || !formData.description || !formData.rotationCount) {
+			return;
+		}
+
+		let program = new Program(formData.name, formData.description, formData.rotationCount, []);
+
+		console.log('Creating program:', program);
+		createProgram(program, user)
+			.then(() => {
+				if ($modalStore[0].response) $modalStore[0].response(formData);
+				modalStore.close();
+			})
+			.catch((error) => {
+				console.error('Error creating program:', error);
+			});
+	}
 </script>
 
 {#if $modalStore[0]}
-	<div class="modal-example-form {cBase}">
-		<header class={cHeader}>{$modalStore[0].title ?? '(title missing)'}</header>
+	<div class="modal-example-form card p-4 w-modal shadow-xl space-y-4">
+		<header class="text-2xl font-bold">{$modalStore[0].title ?? '(title missing)'}</header>
 		<article>{$modalStore[0].body ?? '(body missing)'}</article>
-		<!-- Enable for debugging: -->
-		<form class="modal-form {cForm}">
+
+		<form class="modal-form border border-surface-500 p-4 space-y-4 rounded-container-token">
 			<label class="label">
 				<span>Name</span>
 				<input
@@ -63,7 +82,7 @@
 		<!-- prettier-ignore -->
 		<footer class="modal-footer {parent.regionFooter}">
         <button class="btn {parent.buttonNeutral}" on:click={parent.onClose}>{parent.buttonTextCancel}</button>
-        <button class="btn {parent.buttonPositive}" on:click={onFormSubmit}>Create Program</button>
+        <button class="btn {parent.buttonPositive}" on:click={onCreateProgram}>Create Program</button>
     </footer>
 	</div>
 {/if}

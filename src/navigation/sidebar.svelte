@@ -13,7 +13,7 @@
 		</TreeViewItem>
 	</a>
 
-	<a href="/home/workouts">
+	<a href="/home/programs">
 		<TreeViewItem>
 			<svelte:fragment slot="lead">
 				<Icon icon="map:gym" width="24" />

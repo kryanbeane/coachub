@@ -26,6 +26,10 @@ export default {
 						name: 'wintry',
 						enhancements: true,
 					},
+					{
+						name: 'gold-nouveau',
+						enhancements: true,
+					},
 				],
 			},
 		}),

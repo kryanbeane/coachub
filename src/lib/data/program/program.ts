@@ -19,6 +19,8 @@ export const programConverter = {
 	toFirestore: (program: Program): any => {
 		return {
 			name: program.name,
+			description: program.description,
+			rotationCount: program.rotationCount,
 			rotations: program.rotations.map((rotation) => rotationConverter.toFirestore(rotation))
 		};
 	},
