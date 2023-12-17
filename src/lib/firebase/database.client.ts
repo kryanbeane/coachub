@@ -1,4 +1,4 @@
-import { setDoc, collection, doc, getDoc, query, getDocs } from 'firebase/firestore';
+import { setDoc, collection, doc, getDoc, query, getDocs, where, deleteDoc } from 'firebase/firestore';
 import { db } from './firebase.client';
 import type { User } from 'firebase/auth';
 import { programConverter, type Program } from '$lib/data/program/program';
@@ -38,9 +38,17 @@ export async function createProgram(program: Program, user: User) {
 export async function deleteProgram(programId: string, user: User) {
 	try {
 		const programRef = doc(db, 'users', user.uid, 'programs', programId);
-		await setDoc(programRef, { deleted: true }, { merge: true });
-
+		await deleteDoc(programRef);
 		return { message: 'Program deleted successfully' };
+	} catch (e) {
+		console.log(e);
+		throw e;
+	}
+}
+
+export async function getProgram(program: Program, user: User) {
+	try {
+		return await getDocs(query(collection(db, 'users', user.uid, 'programs'), where('name', '==', program.name)));
 	} catch (e) {
 		console.log(e);
 		throw e;
