@@ -1,41 +1,49 @@
-import type { DocumentData, DocumentSnapshot, SnapshotOptions } from 'firebase/firestore';
-import { rotationConverter, type Rotation } from '../rotation/rotation';
+import type { DocumentSnapshot, DocumentData } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
+import type { Rotation } from '../rotation/rotation';
 
 export class Program {
-	name: string;
-	description: string;
-	rotationCount: number;
-	rotations: Rotation[];
+    uid: string;
+    name: string;
+    description: string;
+    rotations: Rotation[];
 
-	constructor(name: string, description: string, rotationCount: number, rotations: Rotation[]) {
-		this.name = name;
-		this.description = description;
-		this.rotationCount = rotationCount;
-		this.rotations = rotations;
-	}
+    constructor(name: string, description: string, rotations: Rotation[] = [], uid?: string) {
+        this.uid = uid || uuidv4();
+        this.name = name;
+        this.description = description;
+        this.rotations = rotations;
+    }
 }
 
 export const programConverter = {
-	toFirestore: (program: Program): any => {
-		return {
-			name: program.name,
-			description: program.description,
-			rotationCount: program.rotationCount,
-			rotations: program.rotations.map((rotation) => rotationConverter.toFirestore(rotation))
-		};
-	},
-	fromFirestore: (snapshot: DocumentSnapshot, options?: SnapshotOptions): Program | undefined => {
-		const data = snapshot.data(options);
-		if (data) {
-			return new Program(
-				data.name,
-				data.description,
-				data.rotationCount,
-				data.rotations.map((rotation: DocumentSnapshot<DocumentData, DocumentData>) =>
-					rotationConverter.fromFirestore(rotation)
-				)
-			);
-		}
-		return undefined;
-	}
+    toFirestore: (program: Program): DocumentData => {
+        return {
+            uid: program.uid,
+            name: program.name,
+            description: program.description
+        };
+    },
+    fromFirestore: (snapshot: DocumentSnapshot<DocumentData>): Program => {
+        const data = snapshot.data();
+        if (!data) throw new Error('Program data not found');
+
+        return new Program(
+            data.name,
+            data.description,
+            [],
+            snapshot.id
+        );
+    },
+    fromFirestoreWithRotations: (snapshot: DocumentSnapshot<DocumentData>, rotations: Rotation[]): Program => {
+        const data = snapshot.data();
+        if (!data) throw new Error('Program data not found');
+
+        return new Program(
+            data.name,
+            data.description,
+            rotations,
+            snapshot.id
+        );
+    }
 };

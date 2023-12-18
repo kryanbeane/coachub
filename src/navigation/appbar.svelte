@@ -74,6 +74,8 @@
 			<strong class="text-xl uppercase">Coachub</strong>
 		</svelte:fragment>
 		<svelte:fragment slot="trail">
+			<LightSwitch />
+
 			{#if loggedIn}
 				<button use:popup={userSettings} class="hover:outline-orange-400">
 					<Avatar {initials} background="bg-primary-500 w-9" />
@@ -96,8 +98,6 @@
 			{:else}
 				<div class="placeholder-circle w-9" />
 			{/if}
-
-			<LightSwitch />
 		</svelte:fragment>
 	</AppBar>
 {/if}

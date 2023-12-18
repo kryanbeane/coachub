@@ -1,33 +1,37 @@
-import type { DocumentData, DocumentSnapshot } from 'firebase/firestore';
-import { workoutConverter, type Workout } from '../workout/workout';
+import { v4 as uuidv4 } from 'uuid';
+import type { Workout } from '../workout/workout';
+import { workoutConverter } from '../workout/workout';
 
 export class Rotation {
-	name: string;
-	workouts: Workout[];
+    uid: string;
+    name: string;
+    workouts: Workout[];
 
-	constructor(name: string, workouts: Workout[]) {
-		this.name = name;
-		this.workouts = workouts;
-	}
+    constructor(name: string, workouts: Workout[], uid?: string) {
+        this.uid = uid || uuidv4(); 
+        this.name = name;
+        this.workouts = workouts;
+    }
 }
 
+import type { DocumentData, DocumentSnapshot } from 'firebase/firestore';
+
 export const rotationConverter = {
-	toFirestore: (rotation: Rotation): any => {
-		return {
-			name: rotation.name,
-			workouts: rotation.workouts.map((workout) => workoutConverter.toFirestore(workout))
-		};
-	},
-	fromFirestore: (snapshot: DocumentSnapshot): Rotation | undefined => {
-		const data = snapshot.data();
-		if (data) {
-			return new Rotation(
-				data.name,
-				data.workouts.map((workout: DocumentSnapshot<DocumentData, DocumentData>) =>
-					workoutConverter.fromFirestore(workout)
-				)
-			);
-		}
-		return undefined;
-	}
+    toFirestore: (rotation: Rotation): DocumentData => {
+        return {
+			uid: rotation.uid,
+            name: rotation.name,
+            workouts: rotation.workouts.map(workout => workoutConverter.toFirestore(workout))
+        };
+    },
+    fromFirestore: (snapshot: DocumentSnapshot<DocumentData>): Rotation => {
+        const data = snapshot.data();
+        if (!data) throw new Error('Rotation data not found');
+
+        return new Rotation(
+            data.name,
+            data.workouts ? data.workouts.map((workoutData: DocumentSnapshot<DocumentData, DocumentData>) => workoutConverter.fromFirestore(workoutData)) : [],
+            snapshot.id
+        );
+    }
 };

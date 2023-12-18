@@ -33,7 +33,10 @@ export async function handle({ event, resolve }) {
 		redirect(302, '/login');
 	}
 
-	if (!user && protectRoutes.includes(url.pathname)) {
+	const isProtectedRoute = url.pathname.startsWith('/home');
+
+
+	if (!user && isProtectedRoute) {
 		redirect(302, `/login?redirect=${url.pathname}`);
 	}
 

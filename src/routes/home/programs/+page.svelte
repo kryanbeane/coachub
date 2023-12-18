@@ -4,7 +4,7 @@
 	import type { Program } from '$lib/data/program/program';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ModalStore } from '@skeletonlabs/skeleton';
-	import { deleteProgram, fetchProgramsForUser, getProgram } from '$lib/firebase/database.client';
+	import { deleteProgram, fetchProgramsForUser } from '$lib/firebase/database.client';
 	import Search from '$lib/components/Table/Search/Search.svelte';
 	import TableHeader from '$lib/components/Table/TableHeader/TableHeader.svelte';
 	import RowCount from '$lib/components/Table/RowCount/RowCount.svelte';
@@ -12,8 +12,9 @@
 	import RowsPerPage from '$lib/components/Table/RowsPerPage/RowsPerPage.svelte';
 	import { DataHandler } from '@vincjo/datatables';
 	import Icon from '@iconify/svelte';
-	import { Toast, getToastStore } from '@skeletonlabs/skeleton';
-	import type { ToastSettings, ToastStore } from '@skeletonlabs/skeleton';
+	import { getToastStore } from '@skeletonlabs/skeleton';
+	import type { ToastSettings } from '@skeletonlabs/skeleton';
+	import { goto } from '$app/navigation';
 
 	const toastStore = getToastStore();
 	let modalStore: ModalStore = getModalStore();
@@ -22,9 +23,7 @@
 
 	session.subscribe(async (cur: any) => {
 		user = cur?.user;
-		if (user) {
-			programs = await fetchProgramsForUser(user);
-		}
+		await updateProgramList();
 	});
 
 	async function updateProgramList() {
@@ -40,51 +39,52 @@
 			title: 'Program Designer',
 			body: '',
 			response: async (r) => {
-				await updateProgramList(); // Refresh the list of programs
+				await updateProgramList();
 			}
 		};
 		modalStore.trigger(modal);
 	}
 
 	async function onDeleteProgram(program: Program) {
-    const confirmed = await createDeleteProgramModal();
-    if (confirmed) {
-        let prog = getProgram(program, user);
-        console.log(prog);
-        (await prog).forEach(async (p) => {
-            await deleteProgram(p.id, user);
-            await updateProgramList();
-        });
+		const confirmed = await createDeleteProgramModal(program);
+		if (confirmed) {
+			await deleteProgram(program.uid, user);
+			await updateProgramList();
 
-        const t: ToastSettings = {
-            message: 'Workout Deleted'
-        };
-        toastStore.trigger(t);
-    } else {
-        console.log("Deletion cancelled.");
-    }
-}
+			const t: ToastSettings = {
+				message: 'Program Deleted'
+			};
+			toastStore.trigger(t);
+		} else {
+			console.log('Deletion cancelled.');
+		}
+	}
 
-function createDeleteProgramModal(): Promise<boolean> {
-    return new Promise<boolean>((resolve) => {
-        const modal: ModalSettings = {
-            type: 'confirm',
-            title: 'Deleting Program',
-            body: 'Are you sure you wish to delete this Program?',
-            response: (r: boolean) => {
-                resolve(r);
-            }
-        };
-        modalStore.trigger(modal);
-    });
-}
+	function createDeleteProgramModal(program: Program): Promise<boolean> {
+		return new Promise<boolean>((resolve) => {
+			const modal: ModalSettings = {
+				type: 'confirm',
+				title: 'Deleting ' + program.name,
+				body: 'Are 	you sure you wish to delete this Program?',
+				response: (r: boolean) => {
+					resolve(r);
+				}
+			};
+			modalStore.trigger(modal);
+		});
+	}
 
+	function onRowSelected(program: Program) {
+		goto('/home/programs/' + program.uid);
+	}
 
 	$: handler = new DataHandler(programs, { rowsPerPage: 10 });
 	$: rows = handler.getRows();
 </script>
 
-<div class="mx-4 my-4 overflow-x-auto space-y-2">
+<title>Designer - Coachub</title>
+
+<div class="m-8 overflow-x-auto space-y-2">
 	<header class="flex justify-between">
 		<div>
 			<button class="btn variant-filled-surface mr-1" on:click={createProgramModal}>
@@ -111,14 +111,15 @@ function createDeleteProgramModal(): Promise<boolean> {
 		</thead>
 		<tbody>
 			{#each $rows as row}
-				<tr>
-					<td>{row.name}</td>
-					<td>{row.description}</td>
-					<td>{row.rotationCount}</td>
+				<tr class="cursor-pointer">
+					<td on:click={() => onRowSelected(row)}>{row.name}</td>
+					<td on:click={() => onRowSelected(row)}>{row.description}</td>
+					<td on:click={() => onRowSelected(row)}>{row.rotations.length}</td>
 					<td>
 						<button
 							class="focus:outline-none"
-							on:click={() => {
+							on:click={(event) => {
+								event.stopPropagation();
 								onDeleteProgram(row);
 							}}
 						>
