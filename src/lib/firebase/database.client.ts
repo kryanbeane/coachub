@@ -14,7 +14,7 @@ export async function createUser(user: User) {
 			email: user.email
 		});
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 		throw e;
 	}
 }
@@ -26,7 +26,7 @@ export async function createProgram(program: Program, user: User) {
 
 		return { message: 'Program created successfully', programId: program.uid };
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 		throw e;
 	}
 }
@@ -37,12 +37,12 @@ export async function deleteProgram(programId: string, user: User) {
 		await deleteDoc(programRef);
 		return { message: 'Program deleted successfully' };
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 		throw e;
 	}
 }
 
-export async function getProgram(programId: string, user: User, fetchRotations: boolean = false) {
+export async function getProgram(programId: string, user: User, fetchRotations: boolean) {
 	try {
 		if (!programId || !user || !user.uid) {
 			throw new Error('Invalid arguments to getProgram');
@@ -64,7 +64,7 @@ export async function getProgram(programId: string, user: User, fetchRotations: 
 			return programConverter.fromFirestore(docSnapshot);
 		}
 	} catch (e) {
-		console.log(e);
+		console.error(e);
 		throw e;
 	}
 }
@@ -80,13 +80,27 @@ export async function updateProgram(program: Program, user: User) {
 	}
 }
 
-export async function listPrograms(user: User): Promise<Program[]> {
+export async function listPrograms(user: User) {
 	try {
-		const querySnapshot = await getDocs(query(collection(db, 'users', user.uid, 'programs')));
-		const programs = querySnapshot.docs
-			.map((docSnapshot) => programConverter.fromFirestore(docSnapshot))
-			.filter((p): p is Program => p !== undefined);
-		return programs;
+		const programsCollection = collection(db, 'users', user.uid, 'programs');
+		const querySnapshot = await getDocs(programsCollection);
+
+		const programs = await Promise.all(
+			querySnapshot.docs.map(async (docSnapshot) => {
+				const program = programConverter.fromFirestore(docSnapshot);
+				if (!program) return undefined;
+
+				const rotationsCollection = collection(docSnapshot.ref, 'rotations');
+				const rotationsSnapshot = await getDocs(rotationsCollection);
+				const rotations: Rotation[] = rotationsSnapshot.docs.map((doc) =>
+					rotationConverter.fromFirestore(doc)
+				);
+
+				return { ...program, rotations };
+			})
+		);
+
+		return programs.filter((p): p is Program => p !== undefined);
 	} catch (err) {
 		console.error('Error fetching programs:', err);
 		throw err;

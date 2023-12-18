@@ -71,7 +71,7 @@
 {:else}
 	<AppBar>
 		<svelte:fragment slot="lead">
-			<strong class="text-xl uppercase">Coachub</strong>
+			<strong class="text-xl uppercase">koach</strong>
 		</svelte:fragment>
 		<svelte:fragment slot="trail">
 			<LightSwitch />

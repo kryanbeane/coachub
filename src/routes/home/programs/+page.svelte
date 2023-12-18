@@ -4,7 +4,7 @@
 	import type { Program } from '$lib/data/program/program';
 	import { getModalStore } from '@skeletonlabs/skeleton';
 	import type { ModalSettings, ModalStore } from '@skeletonlabs/skeleton';
-	import { deleteProgram, fetchProgramsForUser } from '$lib/firebase/database.client';
+	import { deleteProgram, listPrograms } from '$lib/firebase/database.client';
 	import Search from '$lib/components/Table/Search/Search.svelte';
 	import TableHeader from '$lib/components/Table/TableHeader/TableHeader.svelte';
 	import RowCount from '$lib/components/Table/RowCount/RowCount.svelte';
@@ -28,7 +28,8 @@
 
 	async function updateProgramList() {
 		if (user) {
-			programs = await fetchProgramsForUser(user);
+			programs = await listPrograms(user);
+			console.log(programs)
 		}
 	}
 

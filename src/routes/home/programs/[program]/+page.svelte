@@ -1,21 +1,22 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { getProgram } from '$lib/firebase/database.client';
+	import { getProgram, listAllWorkouts } from '$lib/firebase/database.client';
 	import { session } from '$lib/firebase/session';
 	import type { Program } from '$lib/data/program/program';
 	import type { User } from 'firebase/auth';
 	import Search from '$lib/components/Table/Search/Search.svelte';
 	import TableHeader from '$lib/components/Table/TableHeader/TableHeader.svelte';
-	import { goto } from '$app/navigation';
 	import { DataHandler } from '@vincjo/datatables';
 	import type { Rotation } from '$lib/data/rotation/rotation';
 	import { ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
+	import type { Workout } from '$lib/data/workout/workout';
 
 	let programDetails: Program | null = null;
 	let loading = true;
 	let user: User | null = null;
 	let selectedRotation: Rotation | null = null;
+	let workoutList: Workout[] = [];
 
 	session.subscribe((cur: any) => {
 		user = cur?.user;
@@ -35,30 +36,32 @@
 	});
 
 	$: if (programDetails && programDetails?.rotations?.length > 0) {
-		const sortedRotations = programDetails.rotations.sort((a, b) => a.name.localeCompare(b.name));
 		if (!selectedRotationId) {
 			selectedRotationId = sortedRotations[0].uid;
-			updateTable(sortedRotations[0]);
+			updateWorkouts(sortedRotations[0]);
 		}
 	}
 
 	$: if (selectedRotation) {
-		updateTable(selectedRotation);
+		updateWorkouts(selectedRotation);
 	}
 
-	function updateTable(rotation: Rotation) {
-		// Update your table based on the selected rotation
-		// This is where you can implement the logic to update the table
-	}
-
-	function onRowSelected(rotation: Rotation) {
+	async function onRotationSelected(rotation: Rotation) {
 		selectedRotation = rotation;
+		if (programId && user) {
+			workoutList = await listAllWorkouts(rotation.uid, programId, user);
+		}
 	}
 
-	$: sortedRotations =
-		programDetails?.rotations?.sort((a, b) => a.name.localeCompare(b.name)) || [];
-	$: handler = new DataHandler(sortedRotations, { rowsPerPage: 10 });
-	$: rotations = handler.getRows();
+	async function updateWorkouts(rotation: Rotation) {
+		if (programId && user) {
+			workoutList = await listAllWorkouts(rotation.uid, programId, user);
+		}
+	}
+
+	$: sortedRotations = (programDetails?.rotations ?? []).sort((a, b) => a.name.localeCompare(b.name));
+	$: handler = new DataHandler(workoutList, { rowsPerPage: 10 });
+	$: workouts = handler.getRows();
 </script>
 
 <title>{programDetails?.name}</title>
@@ -82,6 +85,7 @@
 		<ListBox>
 			{#each sortedRotations as rotation (rotation.uid)}
 				<ListBoxItem
+					on:click={() => onRotationSelected(rotation)}
 					active="variant-ghost"
 					class="mb-4"
 					bind:group={selectedRotationId}
@@ -115,9 +119,9 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each $rotations as rotation}
+					{#each $workouts as workout}
 						<tr class="cursor-pointer">
-							<td on:click={() => onRowSelected(rotation)}>{rotation.name}</td>
+							<td>{workout.name}</td>
 						</tr>
 					{/each}
 				</tbody>

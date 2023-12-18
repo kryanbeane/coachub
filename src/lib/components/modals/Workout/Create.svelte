@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { SvelteComponent } from 'svelte';
 	import { getModalStore } from '@skeletonlabs/skeleton';
-	import { createProgram } from '$lib/firebase/database.client';
+	import { createProgram, createWorkout } from '$lib/firebase/database.client';
 	import { Program } from '$lib/data/program/program';
 	import { session } from '$lib/firebase/session';
 	import type { User } from 'firebase/auth';
+	import { Workout } from '$lib/data/workout/workout';
 
 	export let parent: SvelteComponent;
 
@@ -12,7 +13,7 @@
 	const formData = {
 		name: undefined,
 		description: undefined,
-		rotationCount: undefined
+		focus: undefined
 	};
 
 	let user: User;
@@ -22,14 +23,14 @@
 	});
 
 	function onCreateProgram(): void {
-		if (!formData.name || !formData.description || !formData.rotationCount) {
+		if (!formData.name || !formData.description || !formData.focus) {
 			return;
 		}
 
-		let program = new Program(formData.name, formData.description, formData.rotationCount, []);
+		let workout = new Workout(formData.name, formData.description, formData.focus, []);
 
-		console.log('Creating program:', program);
-		createProgram(program, user)
+		console.log('Creating program:', workout);
+		createWorkout(workout, rotationId, program.uid, user)
 			.then(() => {
 				if ($modalStore[0].response) $modalStore[0].response(formData);
 				modalStore.close();
@@ -63,6 +64,17 @@
 					placeholder="Program description..."
 				/>
 			</label>
+			<div class="flex gap-4">
+				<label class="label w-40">
+					<span>Number of Rotations</span>
+					<input
+						class="input"
+						type="number"
+						bind:value={formData.rotationCount}
+						placeholder="# rotations..."
+					/>
+				</label>
+			</div>
 			<label class="label">
 				<span>Assign to Client</span>
 				<input class="input" type="text" placeholder="Available in Alpha..." disabled={true} />
