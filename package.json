@@ -53,6 +53,7 @@
     "firebase-admin": "^11.11.1",
     "flowbite": "^2.2.0",
     "lottie-web": "^5.12.2",
+    "svelte-dnd-action": "^0.9.38",
     "svelte-lottie": "^0.0.0",
     "svelte-sidebar-menu": "^0.9.12",
     "unplugin-icons": "^0.18.1",

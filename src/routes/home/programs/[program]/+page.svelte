@@ -59,7 +59,9 @@
 		}
 	}
 
-	$: sortedRotations = (programDetails?.rotations ?? []).sort((a, b) => a.name.localeCompare(b.name));
+	$: sortedRotations = (programDetails?.rotations ?? []).sort((a, b) =>
+		a.name.localeCompare(b.name)
+	);
 	$: handler = new DataHandler(workoutList, { rowsPerPage: 10 });
 	$: workouts = handler.getRows();
 </script>
