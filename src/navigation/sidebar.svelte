@@ -1,11 +1,24 @@
-<!-- Insert the list: -->
-<nav class="list-nav">
-    <ul>
-        <li><a href="/">Dashboard</a></li>
-        <li><a href="/clients">Clients</a></li>
-        <li><a href="/messages">Messages</a></li>
-        <li><a href="/designer">Designer</a></li>
-        <li><a href="/automation">Automation</a></li>
-        <li><a href="/payment">Payment</a></li>
-    </ul>
-</nav>
+<script lang="ts">
+	import Icon from '@iconify/svelte';
+	import { TreeView, TreeViewItem } from '@skeletonlabs/skeleton';
+</script>
+
+<TreeView>
+	<a href="/home">
+		<TreeViewItem>
+			<svelte:fragment slot="lead">
+				<Icon icon="fluent:home-12-filled" width="24" />
+			</svelte:fragment>
+			Home
+		</TreeViewItem>
+	</a>
+
+	<a href="/home/programs">
+		<TreeViewItem>
+			<svelte:fragment slot="lead">
+				<Icon icon="map:gym" width="24" />
+			</svelte:fragment>
+			Designer
+		</TreeViewItem>
+	</a>
+</TreeView>

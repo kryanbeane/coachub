@@ -1,56 +1,44 @@
-import { auth } from '$lib/firebase/firebase.server';
+import * as admin from 'firebase-admin';
 import { redirect } from '@sveltejs/kit';
+import svcAccount from '../coachubsvcaccount.json';
 
-/** @type {import('@sveltejs/kit').Handle} */
-export async function handle({ event, resolve }) {
-
-    const protectRoutes = [
-        '/home',
-        '/home/*'
-    ];
-
-    const guessRoutes = [
-        '/login',
-    ];
-
-    try {
-        const jwtToken = event.cookies.get('jwt');
-        if (jwtToken) {
-            event.locals.user = await getFirebaseUser(jwtToken);
-        } else {
-            event.locals.user = null;
-        }
-    } catch (error) {
-        event.locals.user = null;
-    }
-
-    const user = event.locals?.user;
-    const url = event.url;
-
-    if (url.pathname !== '/') {
-        if (!user && protectRoutes.find(u => url.pathname.indexOf(u) > -1)) {
-            throw redirect(302, `/login?redirect=${url.pathname}`);
-        }
-        if (user && guessRoutes.find(u => url.pathname.indexOf(u) > -1)) {
-            throw redirect(302, '/home');
-        }
-    }
-
-    const response = await resolve(event);
-
-    return response;
+// Initialize Firebase Admin SDK
+if (!admin.apps.length) {
+	admin.initializeApp({
+		credential: admin.credential.cert(svcAccount as admin.ServiceAccount)
+	});
 }
 
-async function getFirebaseUser(token: string) {
-    if (!token) {
-        return null;
-    }
+async function getUserFromToken(token: string) {
+	try {
+		const decodedToken = await admin.auth().verifyIdToken(token);
+		return decodedToken;
+	} catch (error) {
+		console.error('Error verifying auth token', error);
+		return null;
+	}
+}
 
-    const decodedToken = await auth.verifyIdToken(token, true);
-    const user = await auth.getUser(decodedToken.uid);
+export async function handle({ event, resolve }) {
+	const protectRoutes = ['/home', '/home/programs']; 
+	const url = event.url;
 
-    return {
-        id: user.uid,
-        email: user.email
-    }
+	const token = event.cookies.get('idToken');
+	const user = token ? await getUserFromToken(token) : null;
+
+	if (url.pathname === '/') {
+		if (user) {
+			redirect(302, '/home');
+		}
+		redirect(302, '/login');
+	}
+
+	const isProtectedRoute = url.pathname.startsWith('/home');
+
+
+	if (!user && isProtectedRoute) {
+		redirect(302, `/login?redirect=${url.pathname}`);
+	}
+
+	return await resolve(event);
 }

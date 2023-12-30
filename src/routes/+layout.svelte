@@ -1,51 +1,77 @@
 <script lang="ts">
-    import 'firebase/auth';
-    import { onMount } from 'svelte';
-    import messageStore from '$lib/stores/message.store';
-    import { sendJWTToken } from '$lib/firebase/auth.client';
-    import { AppShell } from '@skeletonlabs/skeleton';
-    import '../app.postcss';
+	import '../app.postcss';
+	import { onMount } from 'svelte';
+	import { session } from '$lib/firebase/session';
+	import { goto } from '$app/navigation';
+	import type { LayoutData } from './$types';
+	import { AppShell, Modal, Toast, type ModalComponent } from '@skeletonlabs/skeleton';
+	import Create from '$lib/components/modals/Program/Create.svelte';
 
-	let timerId: ReturnType<typeof setInterval>;
+	export let data: LayoutData;
 
-    async function sendServerToken() {
-        try {
-            await sendJWTToken();
-        } catch (error) {
-            clearInterval(timerId);
-            messageStore.showError("error here 4" + error as string);
-            console.error(error);
+	let loading: boolean = true;
+	let loggedIn: boolean = false;
+
+	session.subscribe((cur: any) => {
+		loading = cur?.loading;
+		loggedIn = cur?.loggedIn;
+	});
+
+    onMount(async () => {
+        const user: any = await data.getAuthUser();
+
+        const loggedIn = !!user && user?.emailVerified;
+        session.update((cur: any) => {
+            loading = false;
+            return {
+                ...cur,
+                user,
+                loggedIn,
+                loading: false
+            };
+        });
+
+        // Check if the user is not already on a page they should stay on
+        if (loggedIn && $page.url.pathname !== '/home/programs') {
+            goto('/home');
         }
-    }
-
-    function closeMessage() {
-        messageStore.hide();
-    }
-
-    onMount(() => {
-        try {
-            sendServerToken();
-            timerId = setInterval(async () => {
-                await sendServerToken();
-            }, 1000 * 10 * 60); // 10 minutes interval
-        } catch (e) {
-            console.error(e);
-            messageStore.showError("error here 5" + e as string);
-        }
-
-        return () => {
-            clearInterval(timerId);
-        };
     });
+	
+	/**
+	 * Initialise stuff for modals to work app-wide
+	*/
+	import { initializeStores } from '@skeletonlabs/skeleton';
+	import { page } from '$app/stores';
+	import Delete from '$lib/components/modals/Program/Delete.svelte';
+	initializeStores();
+	const modalRegistry: Record<string, ModalComponent> = {
+		createProgram: { ref: Create },
+		deleteProgram: { ref: Delete}
+	};
 </script>
 
-<AppShell>
-    {#if $messageStore.show}
-        <div class="alert alert-dismissible" role="alert">
-            <strong>{$messageStore.type === 'error' ? 'Error' : 'Success'}:</strong>
-            {$messageStore.message}
-            <button type="button" on:click={closeMessage} class="btn-close" aria-label="Close" />
-        </div>
-    {/if}
-    <slot />
-</AppShell>
+<Modal components={modalRegistry} />
+<Toast />
+
+{#if loading}
+	<AppShell>
+		<section class="card w-full">
+			<div class="p-4 space-y-4">
+				<div class="placeholder" />
+				<div class="grid grid-cols-3 gap-8">
+					<div class="placeholder" />
+					<div class="placeholder" />
+					<div class="placeholder" />
+				</div>
+				<div class="grid grid-cols-4 gap-4">
+					<div class="placeholder" />
+					<div class="placeholder" />
+					<div class="placeholder" />
+					<div class="placeholder" />
+				</div>
+			</div>
+		</section>
+	</AppShell>
+{:else}
+	<slot />
+{/if}
